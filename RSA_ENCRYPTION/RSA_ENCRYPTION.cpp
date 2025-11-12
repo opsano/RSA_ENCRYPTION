@@ -4,20 +4,74 @@
 using namespace std;
 int generateRandomNumber(int);
 int getPrimeNumber();
-int eulerTotientFunction(int);
+int modInverse(int, int);
+int gcd(int, int);
+int power(int, int, int);
+void generateKeys(int&, int&, int&);
+int encrypt(int, int, int);
+int decrypt(int, int, int);
 int main(int argc, char* argv[])
 {
-    int p = getPrimeNumber();
-    int q = getPrimeNumber();
-    int product = p * q;
-    int euler = eulerTotientFunction(product);
-    int exponent = generateRandomNumber(euler);
+    int e, d, n;
+    generateKeys(e, d, n);
+    
+    int message = 15203;
 
-    cout << p << " " << q << " " << product << " " << euler << endl;
+    int c = encrypt(message, e, n);
 
+    int decrypted = decrypt(c, d, n);
+
+    cout << "Public Key (e, n): (" << e << ", " << n << ")\n";
+    cout << "Private Key (d, n): (" << d << ", " << n << ")\n";
+    cout << "Original Message: " << message << endl;
+    cout << "Encrypted Message: " << c << endl;
+    cout << "Decrypted Message: " << decrypted << endl;
     return 0;
 }
 
+int encrypt(int m, int e, int n)
+{
+    return power(m, e, n);
+}
+
+int decrypt(int c, int d, int n)
+{
+    return power(c, d, n);
+}
+
+void generateKeys(int &e, int&d, int&n) // pointers to variables in main
+{
+    int p = getPrimeNumber();
+    int q = getPrimeNumber();
+    n = p * q;
+
+    int phi = (p - 1) * (q - 1); 
+
+    for (e = 2; e < phi; e++)
+    {
+        if (gcd(e, phi) == 1)
+        {
+            break;
+        }
+    }
+
+    d = modInverse(e,phi);
+    
+}
+
+
+
+int modInverse(int e, int phi)
+{
+    for (int d = 2; d < phi; d++)
+    {
+        if ((e * d) % phi == 1)
+        {
+            return d;
+        }
+    }
+    return -1;
+}
 int generateRandomNumber(int upperBound)
 {
     // thanks to https://www.w3schools.com/cpp/cpp_howto_random_number.asp 
@@ -65,15 +119,18 @@ int gcd(int a, int b)
     return gcd(b % a, a);
 }
 
-int eulerTotientFunction(int n)
+int power(int base, int exp, int mod)
 {
     int result = 1;
-    for (int i = 2; i < n; i++)
+    base = base % mod;
+    while (exp > 0)
     {
-        if (gcd(i,n) == 1)
+        if (exp & 1)
         {
-            result++;
+            result = (result * 1LL * base) % mod;
         }
+        base = (base * 1LL * base) % mod;
+        exp = exp / 2;
     }
     return result;
 }
